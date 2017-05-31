@@ -199,6 +199,7 @@ def train(target, dataset, cluster_spec):
       # Create synchronous replica optimizer.
       opt = tf.train.SyncReplicasOptimizer(
           opt,
+          replica_id=FLAGS.task_id,
           replicas_to_aggregate=num_replicas_to_aggregate,
           total_num_replicas=num_workers,
         #variable_averages=exp_moving_averager,
