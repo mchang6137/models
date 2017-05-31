@@ -23,8 +23,8 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from inception import inception_distributed_train
-from inception.imagenet_data import ImagenetData
+from vgg import vgg_distributed_train
+from vgg.imagenet_data import ImagenetData
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -58,7 +58,7 @@ def main(unused_args):
     if FLAGS.task_id == 0:
       if not tf.gfile.Exists(FLAGS.train_dir):
         tf.gfile.MakeDirs(FLAGS.train_dir)
-    inception_distributed_train.train(server.target, dataset, cluster_spec)
+    vgg_distributed_train.train(server.target, dataset, cluster_spec)
 
 if __name__ == '__main__':
   tf.logging.set_verbosity(tf.logging.INFO)
