@@ -31,6 +31,8 @@ from inception import image_processing
 from inception import inception_model as inception
 from inception.slim import slim
 
+from tensorflow.python.client import timeline
+
 FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_string('job_name', '', 'One of "ps", "worker"')
@@ -275,14 +277,21 @@ def train(target, dataset, cluster_spec):
       next_summary_time = time.time() + FLAGS.save_summaries_secs
       while not sv.should_stop():
         try:
+          run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+          run_metadata = tf.RunMetadata()
           start_time = time.time()
-          loss_value, step = sess.run([train_op, global_step])
+          loss_value, step = sess.run([train_op, global_step], options=run_options, run_metadata=run_metadata)
           assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
           if step > FLAGS.max_steps:
             break
           duration = time.time() - start_time
 
-          if step % 30 == 0:
+          tl = timeline.Timeline(run_metadata.step_stats)
+          ctf = tl.generate_chrome_trace_format()
+          with open('timeline_batch-'+str(FLAGS.batch_size)+'_nums-'+str(num_workers)+'_id-'+str(FLAGS.task_id) + '_step-' + str(step)+'.json', 'w') as f:
+              f.write(ctf)
+
+          if step % 5 == 0:
             examples_per_sec = FLAGS.batch_size / float(duration)
             format_str = ('Worker %d: %s: step %d, loss = %.2f'
                           '(%.1f examples/sec; %.3f  sec/batch)')
@@ -304,11 +313,12 @@ def train(target, dataset, cluster_spec):
             tf.logging.info('Chief got exception while running!')
           raise
 
+      return
       # Stop the supervisor.  This also waits for service threads to finish.
-      sv.stop()
+      #sv.stop()
 
       # Save after the training ends.
-      if is_chief:
-        saver.save(sess,
-                   os.path.join(FLAGS.train_dir, 'model.ckpt'),
-                   global_step=global_step)
+      #if is_chief:
+      #  saver.save(sess,
+      #             os.path.join(FLAGS.train_dir, 'model.ckpt'),
+      #             global_step=global_step)
