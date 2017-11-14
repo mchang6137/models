@@ -287,17 +287,17 @@ def train(target, dataset, cluster_spec):
           duration = time.time() - start_time
 
           tl = timeline.Timeline(run_metadata.step_stats)
-          ctf = tl.generate_chrome_trace_format()
-          with open('timeline_batch-'+str(FLAGS.batch_size)+'_nums-'+str(num_workers)+'_id-'+str(FLAGS.task_id) + '_step-' + str(step)+'.json', 'w') as f:
-              f.write(ctf)
 
-          if step % 5 == 0:
-            examples_per_sec = FLAGS.batch_size / float(duration)
-            format_str = ('Worker %d: %s: step %d, loss = %.2f'
+          examples_per_sec = FLAGS.batch_size / float(duration)
+          format_str = ('Worker %d: %s: step %d, loss = %.2f'
                           '(%.1f examples/sec; %.3f  sec/batch)')
-            tf.logging.info(format_str %
-                            (FLAGS.task_id, datetime.now(), step, loss_value,
-                             examples_per_sec, duration))
+          tf.logging.info(format_str %
+                          (FLAGS.task_id, datetime.now(), step, loss_value,
+                           examples_per_sec, duration))
+
+          # Terminate the job on the 100th iteration
+          if step == 100:
+            exit()
 
           # Determine if the summary_op should be run on the chief worker.
           if is_chief and next_summary_time < time.time():
