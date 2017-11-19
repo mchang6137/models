@@ -89,6 +89,41 @@ RMSPROP_DECAY = 0.9                # Decay term for RMSProp.
 RMSPROP_MOMENTUM = 0.9             # Momentum in RMSProp.
 RMSPROP_EPSILON = 1.0              # Epsilon term for RMSProp.
 
+def variable_device(device, name):
+  """Fix the variable device to colocate its ops."""
+  if callable(device):
+    var_name = tf.get_variable_scope().name + '/' + name
+    var_def = tf.NodeDef(name=var_name, op='Variable')
+    device = device(var_def)
+  if device is None:
+    device = ''
+  return device
+
+@tf.contrib.framework.add_arg_scope
+def fglobal_step(device=''):
+  """Returns the global step variable.
+
+  Args:
+    device: Optional device to place the variable. It can be an string or a
+      function that is called to get the device for the variable.
+
+  Returns:
+    the tensor representing the global step variable.
+  """
+  global_step_ref = tf.get_collection(tf.GraphKeys.GLOBAL_STEP)
+  if global_step_ref:
+    return global_step_ref[0]
+  else:
+    collections = [
+        '_variables_to_restore_',
+        tf.GraphKeys.GLOBAL_VARIABLES,
+        tf.GraphKeys.GLOBAL_STEP,
+    ]
+    # Get the device for the variable.
+    with tf.device(variable_device(device, 'global_step')):
+      return tf.get_variable('global_step', shape=[], dtype=tf.int64,
+                             initializer=tf.zeros_initializer(),
+                             trainable=False, collections=collections)
 
 def train(target, dataset, cluster_spec):
   """Train Inception on a dataset for a number of steps."""
@@ -116,11 +151,11 @@ def train(target, dataset, cluster_spec):
   with tf.device('/job:worker/task:%d' % FLAGS.task_id):
     # Variables and its related init/assign ops are assigned to ps.
     with slim.arg_scope(
-        [slim.variable],
+        [slim.variable, fglobal_step],
         device=slim.VariableDeviceChooser(num_parameter_servers)):
       # Create a variable to count the number of train() calls. This equals the
       # number of updates applied to the variables.
-      global_step = slim.get_or_create_global_step()
+      global_step = fglobal_step()
 
       # Calculate the learning rate schedule.
       num_batches_per_epoch = (dataset.num_examples_per_epoch() /
@@ -286,7 +321,7 @@ def train(target, dataset, cluster_spec):
             break
           duration = time.time() - start_time
 
-          if step % 30 == 0:
+          if step % 1 == 0:
             examples_per_sec = FLAGS.batch_size / float(duration)
             format_str = ('Worker %d: %s: step %d, loss = %.2f'
                           '(%.1f examples/sec; %.3f  sec/batch)')
