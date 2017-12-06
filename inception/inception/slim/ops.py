@@ -85,7 +85,7 @@ def batch_norm(inputs,
     if center:
       beta = variables.variable('beta',
                                 params_shape,
-                                initializer=tf.zeros_initializer,
+                                initializer=tf.zeros_initializer(),
                                 trainable=trainable,
                                 restore=restore)
     if scale:
@@ -99,7 +99,7 @@ def batch_norm(inputs,
     moving_collections = [moving_vars, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
     moving_mean = variables.variable('moving_mean',
                                      params_shape,
-                                     initializer=tf.zeros_initializer,
+                                     initializer=tf.zeros_initializer(),
                                      trainable=False,
                                      restore=restore,
                                      collections=moving_collections)
@@ -327,13 +327,13 @@ def one_hot_encoding(labels, num_classes, scope=None):
   Returns:
     one hot encoding of the labels.
   """
-  with tf.op_scope([labels], scope, 'OneHotEncoding'):
+  with tf.name_scope(values=[labels], name=scope, default_name='OneHotEncoding'):
     batch_size = labels.get_shape()[0]
     indices = tf.expand_dims(tf.range(0, batch_size), 1)
     labels = tf.cast(tf.expand_dims(labels, 1), indices.dtype)
-    concated = tf.concat(1, [indices, labels])
+    concated = tf.concat(axis=1, values=[indices, labels])
     onehot_labels = tf.sparse_to_dense(
-        concated, tf.pack([batch_size, num_classes]), 1.0, 0.0)
+        concated, tf.stack([batch_size, num_classes]), 1.0, 0.0)
     onehot_labels.set_shape([batch_size, num_classes])
     return onehot_labels
 
@@ -361,7 +361,7 @@ def max_pool(inputs, kernel_size, stride=2, padding='VALID', scope=None):
   Raises:
     ValueError: if 'kernel_size' is not a 2-D list
   """
-  with tf.op_scope([inputs], scope, 'MaxPool'):
+  with tf.name_scope(values=[inputs], name=scope, default_name='MaxPool'):
     kernel_h, kernel_w = _two_element_tuple(kernel_size)
     stride_h, stride_w = _two_element_tuple(stride)
     return tf.nn.max_pool(inputs,
@@ -391,7 +391,7 @@ def avg_pool(inputs, kernel_size, stride=2, padding='VALID', scope=None):
   Returns:
     a tensor representing the results of the pooling operation.
   """
-  with tf.op_scope([inputs], scope, 'AvgPool'):
+  with tf.name_scope(values=[inputs], name=scope, default_name='AvgPool'):
     kernel_h, kernel_w = _two_element_tuple(kernel_size)
     stride_h, stride_w = _two_element_tuple(stride)
     return tf.nn.avg_pool(inputs,
@@ -415,7 +415,7 @@ def dropout(inputs, keep_prob=0.5, is_training=True, scope=None):
     a tensor representing the output of the operation.
   """
   if is_training and keep_prob > 0:
-    with tf.op_scope([inputs], scope, 'Dropout'):
+    with tf.name_scope(values=[inputs], name=scope, default_name='Dropout'):
       return tf.nn.dropout(inputs, keep_prob)
   else:
     return inputs
@@ -439,7 +439,7 @@ def flatten(inputs, scope=None):
     raise ValueError('Inputs must be have a least 2 dimensions')
   dims = inputs.get_shape()[1:]
   k = dims.num_elements()
-  with tf.op_scope([inputs], scope, 'Flatten'):
+  with tf.name_scope(values=[inputs], name=scope, default_name='Flatten'):
     return tf.reshape(inputs, [-1, k])
 
 

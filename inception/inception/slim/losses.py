@@ -45,11 +45,11 @@ def l1_regularizer(weight=1.0, scope=None):
     a regularizer function.
   """
   def regularizer(tensor):
-    with tf.op_scope([tensor], scope, 'L1Regularizer'):
+    with tf.name_scope(values=[tensor], name=scope, default_name='L1Regularizer'):
       l1_weight = tf.convert_to_tensor(weight,
                                        dtype=tensor.dtype.base_dtype,
                                        name='weight')
-      return tf.mul(l1_weight, tf.reduce_sum(tf.abs(tensor)), name='value')
+      return tf.multiply(l1_weight, tf.reduce_sum(tf.abs(tensor)), name='value')
   return regularizer
 
 
@@ -64,11 +64,11 @@ def l2_regularizer(weight=1.0, scope=None):
     a regularizer function.
   """
   def regularizer(tensor):
-    with tf.op_scope([tensor], scope, 'L2Regularizer'):
+    with tf.name_scope(values=[tensor], name=scope, default_name='L2Regularizer'):
       l2_weight = tf.convert_to_tensor(weight,
                                        dtype=tensor.dtype.base_dtype,
                                        name='weight')
-      return tf.mul(l2_weight, tf.nn.l2_loss(tensor), name='value')
+      return tf.multiply(l2_weight, tf.nn.l2_loss(tensor), name='value')
   return regularizer
 
 
@@ -84,16 +84,16 @@ def l1_l2_regularizer(weight_l1=1.0, weight_l2=1.0, scope=None):
     a regularizer function.
   """
   def regularizer(tensor):
-    with tf.op_scope([tensor], scope, 'L1L2Regularizer'):
+    with tf.name_scope(values=[tensor], name=scope, default_name='L1L2Regularizer'):
       weight_l1_t = tf.convert_to_tensor(weight_l1,
                                          dtype=tensor.dtype.base_dtype,
                                          name='weight_l1')
       weight_l2_t = tf.convert_to_tensor(weight_l2,
                                          dtype=tensor.dtype.base_dtype,
                                          name='weight_l2')
-      reg_l1 = tf.mul(weight_l1_t, tf.reduce_sum(tf.abs(tensor)),
+      reg_l1 = tf.multiply(weight_l1_t, tf.reduce_sum(tf.abs(tensor)),
                       name='value_l1')
-      reg_l2 = tf.mul(weight_l2_t, tf.nn.l2_loss(tensor),
+      reg_l2 = tf.multiply(weight_l2_t, tf.nn.l2_loss(tensor),
                       name='value_l2')
       return tf.add(reg_l1, reg_l2, name='value')
   return regularizer
@@ -110,11 +110,11 @@ def l1_loss(tensor, weight=1.0, scope=None):
   Returns:
     the L1 loss op.
   """
-  with tf.op_scope([tensor], scope, 'L1Loss'):
+  with tf.name_scope(values=[tensor], name=scope, default_name='L1Loss'):
     weight = tf.convert_to_tensor(weight,
                                   dtype=tensor.dtype.base_dtype,
                                   name='loss_weight')
-    loss = tf.mul(weight, tf.reduce_sum(tf.abs(tensor)), name='value')
+    loss = tf.multiply(weight, tf.reduce_sum(tf.abs(tensor)), name='value')
     tf.add_to_collection(LOSSES_COLLECTION, loss)
     return loss
 
@@ -130,11 +130,11 @@ def l2_loss(tensor, weight=1.0, scope=None):
   Returns:
     the L2 loss op.
   """
-  with tf.op_scope([tensor], scope, 'L2Loss'):
+  with tf.name_scope(values=[tensor], name=scope, default_name='L2Loss'):
     weight = tf.convert_to_tensor(weight,
                                   dtype=tensor.dtype.base_dtype,
                                   name='loss_weight')
-    loss = tf.mul(weight, tf.nn.l2_loss(tensor), name='value')
+    loss = tf.multiply(weight, tf.nn.l2_loss(tensor), name='value')
     tf.add_to_collection(LOSSES_COLLECTION, loss)
     return loss
 
@@ -156,7 +156,7 @@ def cross_entropy_loss(logits, one_hot_labels, label_smoothing=0,
     A tensor with the softmax_cross_entropy loss.
   """
   logits.get_shape().assert_is_compatible_with(one_hot_labels.get_shape())
-  with tf.op_scope([logits, one_hot_labels], scope, 'CrossEntropyLoss'):
+  with tf.name_scope(values=[logits, one_hot_labels], name=scope, default_name='CrossEntropyLoss'):
     num_classes = one_hot_labels.get_shape()[-1].value
     one_hot_labels = tf.cast(one_hot_labels, logits.dtype)
     if label_smoothing > 0:
@@ -169,6 +169,6 @@ def cross_entropy_loss(logits, one_hot_labels, label_smoothing=0,
     weight = tf.convert_to_tensor(weight,
                                   dtype=logits.dtype.base_dtype,
                                   name='loss_weight')
-    loss = tf.mul(weight, tf.reduce_mean(cross_entropy), name='value')
+    loss = tf.multiply(weight, tf.reduce_mean(cross_entropy), name='value')
     tf.add_to_collection(LOSSES_COLLECTION, loss)
     return loss
