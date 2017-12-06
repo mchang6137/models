@@ -68,7 +68,7 @@ def inference(images, num_classes, for_training=False, restore_logits=True,
 
   #Parameters are not tuned, but it should not matter too much for our purposes...
   with slim.arg_scope(slim.alexnet.alexnet_v2_parameters()):
-    logits = slim.alexnet.alexnet_v2(images, is_training=True)
+    logits = slim.alexnet.alexnet_v2(images, is_training=True, spatial_squeeze=True) # Get rid of size 1 dimensions
 
   # Grab the logits associated with the side head. Employed during training.
   return logits
@@ -100,19 +100,23 @@ def loss(logits, labels, batch_size=None):
                                     [batch_size, num_classes],
                                     1.0, 0.0)
 
-  # Cross entropy loss for the main softmax prediction.
-  #dense_labels
-  slim.losses.cross_entropy_loss(logits[0],
+  slim.losses.cross_entropy_loss(logits,
                                  dense_labels,
                                  label_smoothing=0.1,
                                  weight=1.0)
+  # Cross entropy loss for the main softmax prediction.
+  #dense_labels
+  # slim.losses.cross_entropy_loss(logits[0],
+  #                                dense_labels,
+  #                                label_smoothing=0.1,
+  #                                weight=1.0)
 
   # Cross entropy loss for the auxiliary softmax head.
-  slim.losses.cross_entropy_loss(logits[1],
-                                 dense_labels,
-                                 label_smoothing=0.1,
-                                 weight=0.4,
-                                 scope='aux_loss')
+  # slim.losses.cross_entropy_loss(logits[1],
+  #                                dense_labels,
+  #                                label_smoothing=0.1,
+  #                                weight=0.4,
+  #                                scope='aux_loss')
 
 
 def _activation_summary(x):

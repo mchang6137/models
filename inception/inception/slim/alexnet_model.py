@@ -84,6 +84,7 @@ def alexnet_v2(inputs,
   Returns:
     the last op containing the log predictions and end_points dict.
   """
+  print("alexnet_model.alexnet_v2.inputs shape:", inputs.get_shape())
   with tf.variable_scope(scope, 'alexnet_v2', [inputs]) as sc:
     end_points_collection = sc.name + '_end_points'
     # Collect outputs for conv2d, fully_connected and max_pool2d.
