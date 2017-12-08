@@ -33,6 +33,8 @@ slim = tf.contrib.slim
 
 FLAGS = tf.app.flags.FLAGS
 
+MAX_STEP = 100
+
 tf.app.flags.DEFINE_string('job_name', '', 'One of "ps", "worker"')
 tf.app.flags.DEFINE_string('ps_hosts', '',
                            """Comma-separated list of hostname:port for the """
@@ -49,7 +51,7 @@ tf.app.flags.DEFINE_string('protocol', 'grpc',
 tf.app.flags.DEFINE_string('train_dir', '/tmp/imagenet_train',
                            """Directory where to write event logs """
                            """and checkpoint.""")
-tf.app.flags.DEFINE_integer('max_steps', 1000000, 'Number of batches to run.')
+tf.app.flags.DEFINE_integer('max_steps', MAX_STEP, 'Number of batches to run.')
 tf.app.flags.DEFINE_string('subset', 'train', 'Either "train" or "validation".')
 tf.app.flags.DEFINE_boolean('log_device_placement', False,
                             'Whether to log device placement.')
