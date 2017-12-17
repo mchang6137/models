@@ -28,7 +28,12 @@ import re
 
 import tensorflow as tf
 
-import model.vgg as vgg
+import model.resnet_v2 as resnet
+# import model.resnet_utils as resnet_utils
+import tensorflow.contrib.slim.nets as nets
+
+# resnet = nets.resnet_v2
+resnet_utils = nets.resnet_utils
 
 slim = tf.contrib.slim
 FLAGS = tf.app.flags.FLAGS
@@ -67,8 +72,8 @@ def inference(images, num_classes, for_training=False, restore_logits=True,
     Auxiliary Logits. 2-D float Tensor of side-head. Used for training only.
   """
 
-  with slim.arg_scope(vgg.vgg_arg_scope()):
-    outputs,end_points = vgg.vgg_19(images, num_classes=num_classes)
+  with slim.arg_scope(resnet_utils.resnet_arg_scope()):
+    outputs,end_points = resnet.resnet_v2_200(images, num_classes=num_classes)
   
   return outputs, end_points
 
