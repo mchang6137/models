@@ -13,6 +13,18 @@ package_group(
 )
 
 py_library(
+    name = "vgg",
+    srcs = [
+        "vgg_model.py",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":dataset",
+        "//inception/slim",
+    ],
+)
+
+py_library(
     name = "dataset",
     srcs = [
         "dataset.py",
@@ -59,6 +71,28 @@ py_library(
 )
 
 py_binary(
+    name = "imagenet_vgg_train",
+    srcs = [
+        "imagenet_vgg_train.py",
+    ],
+    deps = [
+        ":imagenet_data",
+        ":vgg_train",
+    ],
+)
+
+py_binary(
+    name = "imagenet_vgg_distributed_train",
+    srcs = [
+        "imagenet_vgg_distributed_train.py",
+    ],
+    deps = [
+        ":imagenet_data",
+        ":vgg_distributed_train",
+    ],
+)
+
+py_binary(
     name = "imagenet_eval",
     srcs = [
         "imagenet_eval.py",
@@ -88,6 +122,17 @@ py_library(
     deps = [
         ":image_processing",
         ":inception",
+    ],
+)
+
+py_library(
+    name = "vgg_distributed_train",
+    srcs = [
+        "vgg_distributed_train.py",
+    ],
+    deps = [
+        ":image_processing",
+        ":vgg",
     ],
 )
 
