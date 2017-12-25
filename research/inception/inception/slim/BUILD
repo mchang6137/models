@@ -8,6 +8,15 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 py_library(
+    name = "vgg",
+    srcs = ["vgg_model.py"],
+    deps = [
+        ":ops",
+        ":scopes",
+    ],
+)
+
+py_library(
     name = "scopes",
     srcs = ["scopes.py"],
 )
@@ -95,6 +104,7 @@ py_library(
     srcs = ["slim.py"],
     deps = [
         ":inception",
+	":vgg",
         ":losses",
         ":ops",
         ":scopes",
