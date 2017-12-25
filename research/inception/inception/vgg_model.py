@@ -115,13 +115,13 @@ def loss(logits, labels, batch_size=None):
   sparse_labels = tf.reshape(labels, [batch_size, 1])
   indices = tf.reshape(tf.range(batch_size), [batch_size, 1])
   concated = tf.concat(axis=1, values=[indices, sparse_labels])
-  num_classes = logits[0].get_shape()[-1].value
+  num_classes = logits.get_shape()[-1].value
   dense_labels = tf.sparse_to_dense(concated,
                                     [batch_size, num_classes],
                                     1.0, 0.0)
 
   # Cross entropy loss for the main softmax prediction.
-  slim.losses.cross_entropy_loss(logits[0],
+  slim.losses.cross_entropy_loss(logits,
                                  dense_labels,
                                  label_smoothing=0.1,
                                  weight=1.0)
