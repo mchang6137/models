@@ -194,10 +194,6 @@ def train(target, dataset, cluster_spec):
       variables_to_average = (
           tf.trainable_variables() + tf.moving_average_variables())
 
-      # Add histograms for model variables.
-      for var in variables_to_average:
-        tf.summary.histogram(var.op.name, var)
-
       # Create synchronous replica optimizer.
       opt = tf.train.SyncReplicasOptimizer(
           opt,
@@ -216,11 +212,6 @@ def train(target, dataset, cluster_spec):
       # Compute gradients with respect to the loss.
       grads = opt.compute_gradients(total_loss)
 
-      # Add histograms for gradients.
-      for grad, var in grads:
-        if grad is not None:
-          tf.summary.histogram(var.op.name + '/gradients', grad)
-
       apply_gradients_op = opt.apply_gradients(grads, global_step=global_step)
 
       with tf.control_dependencies([apply_gradients_op]):
@@ -233,9 +224,6 @@ def train(target, dataset, cluster_spec):
 
       # Create a saver.
       saver = tf.train.Saver()
-
-      # Build the summary operation based on the TF collection of Summaries.
-      summary_op = tf.summary.merge_all()
 
       # Build an initialization operation to run below.
       init_op = tf.global_variables_initializer()
@@ -286,8 +274,6 @@ def train(target, dataset, cluster_spec):
             break
           duration = time.time() - start_time
 
-          tl = timeline.Timeline(run_metadata.step_stats)
-
           examples_per_sec = FLAGS.batch_size / float(duration)
           format_str = ('Worker %d: %s: step %d, loss = %.2f'
                           '(%.1f examples/sec; %.3f  sec/batch)')
@@ -295,30 +281,12 @@ def train(target, dataset, cluster_spec):
                           (FLAGS.task_id, datetime.now(), step, loss_value,
                            examples_per_sec, duration))
 
-          # Terminate the job on the 100th iteration
-          if step == 100:
-            exit()
-
-          # Determine if the summary_op should be run on the chief worker.
-          if is_chief and next_summary_time < time.time():
-            tf.logging.info('Running Summary operation on the chief.')
-            summary_str = sess.run(summary_op)
-            sv.summary_computed(sess, summary_str)
-            tf.logging.info('Finished running Summary operation.')
-
-            # Determine the next time for running the summary.
-            next_summary_time += FLAGS.save_summaries_secs
         except:
           if is_chief:
             tf.logging.info('Chief got exception while running!')
           raise
 
-      return
       # Stop the supervisor.  This also waits for service threads to finish.
-      #sv.stop()
+      sv.stop()
+      return
 
-      # Save after the training ends.
-      #if is_chief:
-      #  saver.save(sess,
-      #             os.path.join(FLAGS.train_dir, 'model.ckpt'),
-      #             global_step=global_step)
