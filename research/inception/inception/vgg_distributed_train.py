@@ -265,10 +265,11 @@ def train(target, dataset, cluster_spec):
       next_summary_time = time.time() + FLAGS.save_summaries_secs
       while not sv.should_stop():
         try:
-          run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-          run_metadata = tf.RunMetadata()
+          #run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+          #run_metadata = tf.RunMetadata()
           start_time = time.time()
-          loss_value, step = sess.run([train_op, global_step], options=run_options, run_metadata=run_metadata)
+          loss_value, step = sess.run([train_op, global_step])
+          #loss_value, step = sess.run([train_op, global_step], options=run_options, run_metadata=run_metadata)
           assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
           if step > FLAGS.max_steps:
             break
