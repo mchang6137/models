@@ -65,9 +65,15 @@ def inference(images, num_classes, for_training=False, restore_logits=True,
     Logits. 2-D float Tensor.
     Auxiliary Logits. 2-D float Tensor of side-head. Used for training only.
   """
+  batch_norm_params = {
+    # Decay for the moving averages.
+    'decay': BATCHNORM_MOVING_AVERAGE_DECAY,
+    # epsilon to prevent 0s in variance.
+    'epsilon': 0.001,
+  }
 
   #Parameters are not tuned, but it should not matter too much for our purposes...
-  with slim.arg_scope(slim.alexnet.alexnet_v2_parameters()):
+  with slim.arg_scope(slim.alexnet.alexnet_v2_parameters(batch_norm_params=batch_norm_params)):
     logits = slim.alexnet.alexnet_v2(images, is_training=True, spatial_squeeze=True) # Get rid of size 1 dimensions
 
   # Grab the logits associated with the side head. Employed during training.

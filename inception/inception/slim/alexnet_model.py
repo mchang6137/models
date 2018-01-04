@@ -44,9 +44,11 @@ from inception.slim import losses
 #slim = tf.contrib.slim
 trunc_normal = lambda stddev: tf.truncated_normal_initializer(0.0, stddev)
 
-def alexnet_v2_parameters(weight_decay=0.0005):
+def alexnet_v2_parameters(batch_norm_params, weight_decay=0.0005):
   with scopes.arg_scope([ops.conv2d, ops.fc],
-                      activation=tf.nn.relu):
+                      activation=tf.nn.relu,
+                      weight_decay=weight_decay,
+                      batch_norm_params=batch_norm_params):
     with scopes.arg_scope([ops.conv2d], padding='SAME'):
       with scopes.arg_scope([ops.max_pool], padding='VALID') as arg_sc:
         return arg_sc
