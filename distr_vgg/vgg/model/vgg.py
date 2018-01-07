@@ -41,11 +41,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorflow.contrib.layers.python.layers import layers as layers_lib
 import tensorflow as tf
 
 slim = tf.contrib.slim
 
-def vgg_arg_scope(weight_decay=0.0005):
+def vgg_arg_scope(batch_norm_params, weight_decay=0.0005):
   """Defines the VGG arg scope.
 
   Args:
@@ -57,7 +58,9 @@ def vgg_arg_scope(weight_decay=0.0005):
   with slim.arg_scope([slim.conv2d, slim.fully_connected],
                       activation_fn=tf.nn.relu,
                       weights_regularizer=slim.l2_regularizer(weight_decay),
-                      biases_initializer=tf.zeros_initializer):
+                      biases_initializer=tf.zeros_initializer,
+                      normalizer_fn=layers_lib.batch_norm,
+                      normalizer_params=batch_norm_params):
     with slim.arg_scope([slim.conv2d], padding='SAME') as arg_sc:
       return arg_sc
 

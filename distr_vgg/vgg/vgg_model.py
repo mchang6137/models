@@ -66,8 +66,14 @@ def inference(images, num_classes, for_training=False, restore_logits=True,
     Logits. 2-D float Tensor.
     Auxiliary Logits. 2-D float Tensor of side-head. Used for training only.
   """
+  batch_norm_params = {
+    # Decay for the moving averages.
+    'decay': BATCHNORM_MOVING_AVERAGE_DECAY,
+    # Epsilon to prevent 0s in variance.
+    'epsilon': 0.001,
+  }
 
-  with slim.arg_scope(vgg.vgg_arg_scope()):
+  with slim.arg_scope(vgg.vgg_arg_scope(batch_norm_params)):
     outputs,end_points = vgg.vgg_19(images, num_classes=num_classes)
   
   return outputs, end_points

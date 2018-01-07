@@ -25,6 +25,7 @@ import time
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.framework import ops
 
 from vgg import image_processing
 from vgg import vgg_model as vgg
@@ -34,6 +35,9 @@ slim = tf.contrib.slim
 FLAGS = tf.app.flags.FLAGS
 
 MAX_STEP = 100
+
+# Used to keep the update ops done by batch_norm.
+UPDATE_OPS_COLLECTION = ops.GraphKeys.UPDATE_OPS
 
 tf.app.flags.DEFINE_string('job_name', '', 'One of "ps", "worker"')
 tf.app.flags.DEFINE_string('ps_hosts', '',
@@ -153,7 +157,7 @@ def train(target, dataset, cluster_spec):
   with tf.device('/job:worker/task:%d' % FLAGS.task_id):
     # Variables and its related init/assign ops are assigned to ps.
     with slim.arg_scope(
-        [slim.variable, fglobal_step],
+        [slim.model_variable, fglobal_step],
         device=slim.VariableDeviceChooser(num_parameter_servers)):
       # Create a variable to count the number of train() calls. This equals the
       # number of updates applied to the variables.
@@ -242,12 +246,12 @@ def train(target, dataset, cluster_spec):
         #variable_averages=exp_moving_averager,
           variables_to_average=variables_to_average)
 
-      #batchnorm_updates = tf.get_collection(slim.ops.UPDATE_OPS_COLLECTION)
-      #assert batchnorm_updates, 'Batchnorm updates are missing'
-      #batchnorm_updates_op = tf.group(*batchnorm_updates)
+      batchnorm_updates = tf.get_collection(UPDATE_OPS_COLLECTION)
+      assert batchnorm_updates, 'Batchnorm updates are missing'
+      batchnorm_updates_op = tf.group(*batchnorm_updates)
       # Add dependency to compute batchnorm_updates.
-      #with tf.control_dependencies([batchnorm_updates_op]):
-      #total_loss = tf.identity(total_loss)
+      with tf.control_dependencies([batchnorm_updates_op]):
+        total_loss = tf.identity(total_loss)
 
       # Compute gradients with respect to the loss.
       grads = opt.compute_gradients(total_loss)
