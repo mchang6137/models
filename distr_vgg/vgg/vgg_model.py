@@ -71,10 +71,10 @@ def inference(images, num_classes, for_training=False, restore_logits=True,
     Logits. 2-D float Tensor.
     Auxiliary Logits. 2-D float Tensor of side-head. Used for training only.
   """
-
-  with slim.arg_scope(resnet_utils.resnet_arg_scope()):
+  with slim.arg_scope(resnet_utils.resnet_arg_scope(batch_norm_decay=BATCHNORM_MOVING_AVERAGE_DECAY,
+                                                    batch_norm_epsilon=0.001)):
     outputs,end_points = resnet.resnet_v2_200(images, num_classes=num_classes)
-  
+    # outputs = tf.squeeze(outputs) # Uncomment this if you have dimension 1's to remove
   return outputs, end_points
 
 def loss(logits, labels, batch_size=None):
