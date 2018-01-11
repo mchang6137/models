@@ -323,7 +323,7 @@ def train(target, dataset, cluster_spec):
           start_time = time.time()
           loss_value, step = sess.run([train_op, global_step])
           assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
-          if step > FLAGS.max_steps:
+          if step > FLAGS.max_steps or step > 50:
             break
           duration = time.time() - start_time
 
