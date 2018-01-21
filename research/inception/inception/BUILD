@@ -136,6 +136,17 @@ py_library(
     ],
 )
 
+py_library(
+    name = "vgg_train",
+    srcs = [
+        "vgg_train.py",
+    ],
+    deps = [
+        ":image_processing",
+        ":vgg",
+    ],
+)
+
 py_binary(
     name = "imagenet_train",
     srcs = [
