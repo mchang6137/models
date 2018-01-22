@@ -28,7 +28,7 @@ import re
 
 import tensorflow as tf
 
-from inception.slim import slim
+from slim import slim
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -85,9 +85,6 @@ def inference(images, num_classes, for_training=False, restore_logits=True,
           is_training=for_training,
           restore_logits=restore_logits,
           scope=scope)
-
-  # Add summaries for viewing model statistics on TensorBoard.
-  _activation_summaries(endpoints)
 
   # Grab the logits associated with the side head. Employed during training.
   auxiliary_logits = endpoints['aux_logits']

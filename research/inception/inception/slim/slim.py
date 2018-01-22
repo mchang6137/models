@@ -16,6 +16,7 @@
 # pylint: disable=unused-import
 
 # Collapse tf-slim into a single namespace.
+from inception.slim import inception_benchmark 
 from inception.slim import inception_model as inception
 from inception.slim import losses
 from inception.slim import ops
