@@ -330,7 +330,7 @@ def train(target, dataset, cluster_spec):
           with open('timeline_01.json', 'w') as f:
             f.write(chrome_trace)
           assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
-          if step > FLAGS.max_steps:
+          if step > FLAGS.max_steps or step > 50:
             break
           duration = time.time() - start_time
 
