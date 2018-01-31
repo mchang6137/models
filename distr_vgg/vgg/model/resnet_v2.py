@@ -53,12 +53,13 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import models.resnet_utils as resnet_utils
 from tensorflow.contrib import layers as layers_lib
 from tensorflow.contrib.framework.python.ops import add_arg_scope
 from tensorflow.contrib.framework.python.ops import arg_scope
 from tensorflow.contrib.layers.python.layers import layers
 from tensorflow.contrib.layers.python.layers import utils
-from tensorflow.contrib.slim.python.slim.nets import resnet_utils
+# from tensorflow.contrib.slim.python.slim.nets import resnet_utils
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import variable_scope
@@ -111,10 +112,13 @@ def bottleneck(inputs,
           activation_fn=None,
           scope='shortcut')
 
+    print('>>>>>> size after preact: {}'.format(preact.get_shape()))
     residual = layers_lib.conv2d(
         preact, depth_bottleneck, [1, 1], stride=1, scope='conv1')
+    print('>>>>>> size after conv1 resid: {}'.format(residual.get_shape()))
     residual = resnet_utils.conv2d_same(
         residual, depth_bottleneck, 3, stride, rate=rate, scope='conv2')
+    print('>>>>>> size after conv2 resid: {}'.format(residual.get_shape()))
     residual = layers_lib.conv2d(
         residual,
         depth, [1, 1],
@@ -122,8 +126,9 @@ def bottleneck(inputs,
         normalizer_fn=None,
         activation_fn=None,
         scope='conv3')
-
+    print('>>>>>> size after conv3 resid: {}'.format(residual.get_shape()))
     output = shortcut + residual
+    print('>>>>>> size after adding shortcut and residual: {}'.format(output.get_shape()))
 
     return utils.collect_named_outputs(outputs_collections, sc.name, output)
 
@@ -214,16 +219,21 @@ def resnet_v2(inputs,
           with arg_scope(
               [layers_lib.conv2d], activation_fn=None, normalizer_fn=None):
             net = resnet_utils.conv2d_same(net, 64, 7, stride=2, scope='conv1')
+            print('>>>> net size after conv1: {}'.format(net.get_shape()))
           net = layers.max_pool2d(net, [3, 3], stride=2, scope='pool1')
+          print('>>>> net size after pool1: {}'.format(net.get_shape()))
         net = resnet_utils.stack_blocks_dense(net, blocks, output_stride)
         # This is needed because the pre-activation variant does not have batch
         # normalization or activation functions in the residual unit output. See
         # Appendix of [2].
+        print('>>>> net size after stack_blocks_dense: {}'.format(net.get_shape()))
         net = layers.batch_norm(
             net, activation_fn=nn_ops.relu, scope='postnorm')
+        print('>>>> net size after postnorm: {}'.format(net.get_shape()))
         if global_pool:
           # Global average pooling.
           net = math_ops.reduce_mean(net, [1, 2], name='pool5', keep_dims=True)
+          print('>>>> net size after pool5: {}'.format(net.get_shape()))
         if num_classes is not None:
           net = layers_lib.conv2d(
               net,
@@ -231,6 +241,7 @@ def resnet_v2(inputs,
               activation_fn=None,
               normalizer_fn=None,
               scope='logits')
+          print('>>>> net size after logits: {}'.format(net.get_shape()))
         # Convert end_points_collection into a dictionary of end_points.
         end_points = utils.convert_collection_to_dict(end_points_collection)
         if num_classes is not None:

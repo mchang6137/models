@@ -31,9 +31,10 @@ import tensorflow as tf
 import model.resnet_v2 as resnet
 # import model.resnet_utils as resnet_utils
 import tensorflow.contrib.slim.nets as nets
+import model.resnet_utils
 
 # resnet = nets.resnet_v2
-resnet_utils = nets.resnet_utils
+resnet_utils = model.resnet_utils
 
 slim = tf.contrib.slim
 FLAGS = tf.app.flags.FLAGS
