@@ -53,7 +53,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import models.resnet_utils as resnet_utils
+import model.resnet_utils as resnet_utils
 from tensorflow.contrib import layers as layers_lib
 from tensorflow.contrib.framework.python.ops import add_arg_scope
 from tensorflow.contrib.framework.python.ops import arg_scope
